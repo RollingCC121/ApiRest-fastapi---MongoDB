@@ -1,29 +1,72 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Path, Body
 from config.db import conn
-from schemas.user import userEntity,usersEntity
-from models.user import User
+from schemas.SchemaCargador import cargadorEntity
+from models.ModelCargador import  Cargador
+from bson import ObjectId
+from datetime import datetime
 
-user = APIRouter()
 
-@user.get('/users')
-def find_all_user():
-    return usersEntity(conn.local.user.find())
 
-@user.post('/users')
-def create_user(user:User):
-    new_user = dict(user)
-    id = conn.local.user.insert_one(new_user).inserted_id
-    return str(id)
+ruta_cargador = APIRouter()
+
+@ruta_cargador.get("/cargador/")
+def find_all_cargador():
+    cursor = conn.local.cargador.find()
+    return [cargadorEntity(item) for item in list(cursor)]
     
+@ruta_cargador.get("/cargador/{cargador_id}", response_model=Cargador)
+async def get_cargador_by_id(cargador_id: str):
+    try:
+        cargador = conn.local.cargador.find_one({"_id": ObjectId(cargador_id)})
+        if cargador:
+            return cargadorEntity(cargador)
+        else:
+            raise HTTPException(status_code=404, detail="Cargador not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
-@user.get('/users/{id}')
-def find_user():
-    return 'hellow world'
+@ruta_cargador.post("/cargador/")
+async def create_cargador(cargador_data: Cargador):
+    # Convierte las cadenas de hora a objetos datetime
+    hora_inicio = datetime.strptime(cargador_data.hora_inicio, "%H:%M:%S")
+    hora_fin = datetime.strptime(cargador_data.hora_fin, "%H:%M:%S")
+    cargador_dict = cargador_data.dict()
+    result = conn.local.cargador.insert_one(cargador_dict)
 
-@user.put('/users/{id}')
-def update_user():
-    return 'hellow world'
+    if result.acknowledged:
+        return {"message": "Datos de cargador insertados con éxito"}
+    else:
+        raise HTTPException(status_code=500, detail="Error al insertar datos de cargador")
 
-@user.delete('/users/{id}')
-def delete_user():
-    return 'hellow world'
+@ruta_cargador.put("/cargador/{cargador_id}")
+async def update_cargador(
+    cargador_id: str = Path(..., title="El _id del cargador que deseas actualizar"),
+    cargador_data: Cargador = Body(..., title="Datos del cargador que deseas actualizar")
+):
+    try:
+        # Convierte el _id a tipo ObjectId de MongoDB
+        cargador_object_id = ObjectId(cargador_id)
+
+        # Actualiza el documento en la colección cargador
+        result = conn.local.cargador.update_one(
+            {"_id": cargador_object_id},
+            {"$set": cargador_data.dict(exclude_unset=True)}
+        )
+
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Cargador no encontrado")
+
+        return {"message": "Cargador actualizado exitosamente"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@ruta_cargador.delete("/cargadores/{cargador_id}")
+async def delete_cargador(cargador_id: str):
+    # Eliminar un documento por _id
+    result = conn.local.cargador.delete_one({"_id": ObjectId(cargador_id)})
+    if result.deleted_count == 1:
+        return {"message": "Cargador eliminado"}
+    else:
+        raise HTTPException(status_code=404, detail="Cargador no encontrado")
