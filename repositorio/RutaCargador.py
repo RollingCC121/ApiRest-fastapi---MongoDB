@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Path, Body
-from config.db import conn
-from schemas.SchemaCargador import cargadorEntity
-from models.ModelCargador import  Cargador
+from contexto.db import conn
+from modelo.SchemaCargador import cargadorEntity
+from modelo.ModelCargador import  Cargador
 from bson import ObjectId
-from datetime import datetime
+
 
 
 
@@ -27,9 +27,6 @@ async def get_cargador_by_id(cargador_id: str):
 
 @ruta_cargador.post("/cargador/")
 async def create_cargador(cargador_data: Cargador):
-    # Convierte las cadenas de hora a objetos datetime
-    hora_inicio = datetime.strptime(cargador_data.hora_inicio, "%H:%M:%S")
-    hora_fin = datetime.strptime(cargador_data.hora_fin, "%H:%M:%S")
     cargador_dict = cargador_data.dict()
     result = conn.local.cargador.insert_one(cargador_dict)
 
@@ -44,10 +41,8 @@ async def update_cargador(
     cargador_data: Cargador = Body(..., title="Datos del cargador que deseas actualizar")
 ):
     try:
-        # Convierte el _id a tipo ObjectId de MongoDB
         cargador_object_id = ObjectId(cargador_id)
 
-        # Actualiza el documento en la colección cargador
         result = conn.local.cargador.update_one(
             {"_id": cargador_object_id},
             {"$set": cargador_data.dict(exclude_unset=True)}

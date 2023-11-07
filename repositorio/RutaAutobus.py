@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Path, Body
-from config.db import conn
-from schemas.SchemaAutobus import autobusEntity
-from models.ModelAutobus import  Autobus
+from contexto.db import conn
+from modelo.SchemaAutobus import autobusEntity
+from modelo.ModelAutobus import  Autobus
 from bson import ObjectId
-from datetime import datetime
+
 
 
 
@@ -42,10 +42,8 @@ async def update_autobus(
     autobus_data: Autobus = Body(..., title="Datos del autobus que deseas actualizar")
 ):
     try:
-        # Convierte el _id a tipo ObjectId de MongoDB
         autobus_object_id = ObjectId(autobus_id)
 
-        # Actualiza el documento en la colección cargador
         result = conn.local.autobus.update_one(
             {"_id": autobus_object_id},
             {"$set": autobus_data.dict(exclude_unset=True)}
