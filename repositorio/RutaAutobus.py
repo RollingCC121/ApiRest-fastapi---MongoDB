@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Body
 from contexto.db import conn
-from modelo.SchemaAutobus import autobusEntity
+from datos.schemas import autobusEntity
 from modelo.ModelAutobus import  Autobus
 from bson import ObjectId
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Body
 from contexto.db import conn
-from modelo.SchemaFuncionamiento import funcionamientoEntity
+from datos.schemas import funcionamientoEntity
 from modelo.ModelFuncionamiento import  Funcionamiento
 from bson import ObjectId
 from datetime import datetime

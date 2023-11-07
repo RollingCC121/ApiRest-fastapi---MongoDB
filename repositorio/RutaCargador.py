@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Body
 from contexto.db import conn
-from modelo.SchemaCargador import cargadorEntity
+from datos.schemas import cargadorEntity
 from modelo.ModelCargador import  Cargador
 from bson import ObjectId
 

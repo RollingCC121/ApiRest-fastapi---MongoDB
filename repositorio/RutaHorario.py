@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Body
 from contexto.db import conn
-from modelo.SchemaHorario import horarioEntity
+from datos.schemas import horarioEntity
 from modelo.ModeloHorario import  Horario
 from bson import ObjectId
 from servicio.ValidacionesHorario import HorarioValidations
